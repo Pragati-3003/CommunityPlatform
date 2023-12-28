@@ -43,3 +43,37 @@ export const updateUser = (req, res) => {
   });
 };
 
+export const getSuggestedUsers = async (req, res) => {
+  const userId = req.query.userId;
+
+  try {
+    const query = `
+      SELECT u.id, u.name, u.profilePic
+      FROM users u
+      WHERE u.id <> ? AND u.id NOT IN (
+        SELECT r.followedUserId
+        FROM relationships r
+        WHERE r.followerUserId = ?
+      )
+      AND u.id NOT IN (
+        SELECT r2.followedUserId
+        FROM relationships r1
+        JOIN relationships r2 ON r1.followedUserId = r2.followerUserId
+        WHERE r1.followerUserId = ?
+      )
+      ORDER BY RAND()
+      LIMIT 5;
+    `;
+
+    const [suggestedUsers] = await db.query(query, [userId, userId, userId]);
+
+    if (suggestedUsers.length === 0) {
+      return res.status(404).json({ error: "Not Found", details: "No suggested users found" });
+    }
+
+    res.status(200).json(suggestedUsers);
+  } catch (error) {
+    console.error("Error fetching suggested users", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};

@@ -5,7 +5,7 @@ dotenv.config();
 export const getFollowers = (req, res) => {
   const userId = req.params.userId;
   const q =
-    "SELECT users.id,users.profilePic, users.username ,relationships.followedUserId FROM relationships INNER JOIN users ON relationships.followerUserId = users.id WHERE followedUserId = ?";
+    "SELECT DISTINCT users.id,users.profilePic, users.username ,relationships.followedUserId FROM relationships INNER JOIN users ON relationships.followerUserId = users.id WHERE followedUserId = ?";
 
   db.query(q, [userId], (err, data) => {
     if (err) {
@@ -20,7 +20,7 @@ export const getFollowers = (req, res) => {
 export const getFollowed = (req, res) => {
   const userId = req.params.userId;
   const q =
-    "SELECT users.id,users.profilePic, users.username ,relationships.followerUserId FROM relationships INNER JOIN users ON relationships.followedUserId = users.id WHERE followerUserId = ?";
+    "SELECT DISTINCT users.id,users.profilePic, users.username ,relationships.followerUserId FROM relationships INNER JOIN users ON relationships.followedUserId = users.id WHERE followerUserId = ?";
 
   db.query(q, [userId], (err, data) => {
     if (err) {
@@ -66,3 +66,11 @@ export const deleteRelationship = (req, res) => {
     });
   });
 };
+export const getRelationships = (req,res)=>{
+  const q = "SELECT followerUserId FROM relationships WHERE followedUserId = ?";
+
+  db.query(q, [req.query.followedUserId], (err, data) => {
+    if (err) return res.status(500).json(err);
+    return res.status(200).json(data.map(relationship=>relationship.followerUserId));
+  });
+}

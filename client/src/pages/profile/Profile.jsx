@@ -202,7 +202,7 @@ const Profile = () => {
               </div>
             
             </div>
-            <Posts key={userId} userId={userId} />
+            <Posts  />
           </div>
         </>
       )}

@@ -2,8 +2,11 @@ import Post from "../post/Post";
 import "./posts.scss";
 import { useQuery } from "@tanstack/react-query";
 import { makeRequest } from "../../axios";
-
-const Posts = ({ userId }) => {
+import { useContext } from "react";
+import { AuthContext } from "../../context/authContext";
+const Posts = () => {
+  const { currentUser } = useContext(AuthContext);
+  const userId = currentUser.id;
   const { isLoading, error, data } = useQuery({
     queryKey: ["posts"],
     queryFn: () => makeRequest.get("/posts?userId=" + userId).then((res) => res.data),
@@ -18,8 +21,8 @@ const Posts = ({ userId }) => {
   }
   return (
     <div className="posts">
-      {data?.map((post) => (
-        <Post key={post.id} post={post} />
+      {data?.map((post,index) => (
+        <Post key={index} post={post} />
       ))}
     </div>
   );
